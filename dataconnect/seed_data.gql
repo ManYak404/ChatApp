@@ -1,0 +1,58 @@
+mutation CreateDemoData @transaction @auth(level: PUBLIC, insecureReason: "This mutation is safe to expose to the public as it is only used to seed the database with demo data.") {
+  user_insertMany(data: [
+    {
+      id: "550e8400-e29b-41d4-a716-446655440000",
+      username: "demouser1",
+      email: "demouser1@example.com",
+      passwordHash: "passwordhash1",
+      createdAt: "2024-04-01T00:00:00Z"
+    },
+    {
+      id: "550e8400-e29b-41d4-a716-446655440001",
+      username: "demouser2",
+      email: "demouser2@example.com",
+      passwordHash: "passwordhash2",
+      createdAt: "2024-04-02T00:00:00Z"
+    }
+  ])
+  chat_insertMany(data: [
+    {
+      id: "660e8400-e29b-41d4-a716-446655440002",
+      name: "Demo Chat 1",
+      type: "public",
+      createdAt: "2024-04-03T00:00:00Z"
+    },
+    {
+      id: "770e8400-e29b-41d4-a716-446655440003",
+      name: "Demo Chat 2",
+      type: "private",
+      createdAt: "2024-04-04T00:00:00Z"
+    }
+  ])
+  chatMembership_insertMany(data: [
+    {
+      userId: "550e8400-e29b-41d4-a716-446655440000",
+      chatId: "660e8400-e29b-41d4-a716-446655440002",
+      joinedAt: "2024-04-05T00:00:00Z"
+    },
+    {
+      userId: "550e8400-e29b-41d4-a716-446655440001",
+      chatId: "770e8400-e29b-41d4-a716-446655440003",
+      joinedAt: "2024-04-06T00:00:00Z"
+    }
+  ])
+  message_insertMany(data: [
+    {
+      chatId: "660e8400-e29b-41d4-a716-446655440002",
+      senderId: "550e8400-e29b-41d4-a716-446655440000",
+      content: "Hello from demouser1!",
+      createdAt: "2024-04-07T00:00:00Z"
+    },
+    {
+      chatId: "770e8400-e29b-41d4-a716-446655440003",
+      senderId: "550e8400-e29b-41d4-a716-446655440001",
+      content: "Hi there from demouser2!",
+      createdAt: "2024-04-08T00:00:00Z"
+    }
+  ])
+}

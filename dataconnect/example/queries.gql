@@ -1,0 +1,37 @@
+mutation CreateNewChat($name: String!, $type: String!, $description: String, $imageUrl: String) @auth(level: USER) {
+  chat_insert(data: {
+    name: $name,
+    type: $type,
+    description: $description,
+    imageUrl: $imageUrl,
+    createdAt_expr: "request.time"
+  })
+}
+
+query GetMyChats @auth(level: USER) {
+  chats(where: {chatMemberships_on_chat: {user: {id_expr: "auth.uid"}}}) {
+    id
+    name
+    type
+    description
+    imageUrl
+    createdAt
+  }
+}
+
+mutation JoinChat($chatId: UUID!) @auth(level: USER) {
+  chatMembership_insert(data: {
+    chatId: $chatId,
+    userId_expr: "auth.uid",
+    joinedAt_expr: "request.time"
+  })
+}
+
+mutation SendMessage($chatId: UUID!, $content: String!) @auth(level: USER) {
+  message_insert(data: {
+    chatId: $chatId,
+    senderId_expr: "auth.uid",
+    content: $content,
+    createdAt_expr: "request.time"
+  })
+}

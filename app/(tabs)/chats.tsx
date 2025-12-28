@@ -101,6 +101,10 @@ export default function ChatsList() {
     );
   };
 
+  const handleCreateChat = () => {
+    // TODO: Add create chat functionality
+  };
+
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <View style={styles.header}>
@@ -127,6 +131,13 @@ export default function ChatsList() {
           }
         />
       )}
+      <TouchableOpacity
+        style={styles.createButton}
+        onPress={handleCreateChat}
+        activeOpacity={0.8}
+      >
+        <Ionicons name="add" size={28} color="#fff" />
+      </TouchableOpacity>
     </SafeAreaView>
   );
 }
@@ -202,6 +213,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#ccc",
     textAlign: "center",
+  },
+  createButton: {
+    position: "absolute",
+    bottom: 80, // Account for tab bar height
+    right: 16,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
+    backgroundColor: "#007AFF",
+    justifyContent: "center",
+    alignItems: "center",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    zIndex: 10,
   },
 });
 
