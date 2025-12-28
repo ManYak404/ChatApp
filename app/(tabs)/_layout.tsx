@@ -11,12 +11,18 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name="index"
+        name="chats"
         options={{
-          title: "Chat",
+          title: "Chats",
           tabBarIcon: ({ color, size }) => (
             <Ionicons name="chatbubbles" size={size} color={color} />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="index"
+        options={{
+          href: null, // Hide from tab bar
         }}
       />
       <Tabs.Screen
