@@ -102,7 +102,7 @@ export default function ChatsList() {
   };
 
   const handleCreateChat = () => {
-    // TODO: Add create chat functionality
+    router.push("/create-chat" as any);
   };
 
   return (
