@@ -1,5 +1,6 @@
 import { router } from "expo-router";
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { doc, setDoc } from "firebase/firestore";
 import { useState } from "react";
 import {
     ActivityIndicator,
@@ -11,7 +12,7 @@ import {
     View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { auth } from "../config/firebase";
+import { auth, db } from "../config/firebase";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -34,7 +35,16 @@ export default function Login() {
     try {
       if (isSignUp) {
         // Sign up
-        await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const userCredential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        const userId = userCredential.user.uid;
+        const userEmail = email.trim();
+        
+        // Create user document in Firestore
+        await setDoc(doc(db, "users", userId), {
+          email: userEmail,
+          displayName: userEmail,
+        });
+        
         Alert.alert("Success", "Account created successfully!");
       } else {
         // Sign in
