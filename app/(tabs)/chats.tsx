@@ -3,7 +3,9 @@ import { Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import {
   collection,
+  doc,
   DocumentData,
+  getDoc,
   onSnapshot,
   query,
   QueryDocumentSnapshot,
@@ -28,6 +30,7 @@ interface Chat {
 export default function ChatsList() {
   const [chats, setChats] = useState<Chat[]>([]);
   const [loading, setLoading] = useState(true);
+  const [displayNames, setDisplayNames] = useState<Record<string, string>>({});
   const currentUserId = auth.currentUser?.uid || "";
 
   useEffect(() => {
@@ -44,7 +47,7 @@ export default function ChatsList() {
 
     const unsubscribe = onSnapshot(
       chatsQuery,
-      (snapshot) => {
+      async (snapshot) => {
         const fetchedChats: Chat[] = snapshot.docs.map(
           (doc: QueryDocumentSnapshot<DocumentData>) => {
             const data = doc.data();
@@ -55,6 +58,49 @@ export default function ChatsList() {
           }
         );
         setChats(fetchedChats);
+
+        // Fetch display names for all other participants
+        const fetchDisplayNames = async () => {
+          const otherParticipantIds = fetchedChats
+            .map((chat) => chat.participants.find((id) => id !== currentUserId))
+            .filter((id): id is string => !!id);
+
+          // Remove duplicates
+          const uniqueParticipantIds = Array.from(new Set(otherParticipantIds));
+
+          if (uniqueParticipantIds.length === 0) {
+            return;
+          }
+
+          // Fetch display names for all participants
+          const namesToFetch: Record<string, string> = {};
+          
+          await Promise.all(
+            uniqueParticipantIds.map(async (participantId) => {
+              try {
+                const userDocRef = doc(db, "users", participantId);
+                const userDoc = await getDoc(userDocRef);
+                if (userDoc.exists()) {
+                  const userData = userDoc.data();
+                  namesToFetch[participantId] = userData.displayName || "Unknown";
+                } else {
+                  namesToFetch[participantId] = "Unknown";
+                }
+              } catch (error) {
+                console.error(
+                  `Error fetching display name for ${participantId}:`,
+                  error
+                );
+                namesToFetch[participantId] = "Unknown";
+              }
+            })
+          );
+
+          // Update display names (functional update handles merging)
+          setDisplayNames((prev) => ({ ...prev, ...namesToFetch }));
+        };
+
+        await fetchDisplayNames();
         setLoading(false);
       },
       (error) => {
@@ -66,9 +112,15 @@ export default function ChatsList() {
     return () => unsubscribe();
   }, [currentUserId]);
 
-  const getOtherParticipant = (participants: string[]): string => {
+  const getOtherParticipantId = (participants: string[]): string => {
     const other = participants.find((id) => id !== currentUserId);
-    return other || "Unknown";
+    return other || "";
+  };
+
+  const getOtherParticipantDisplayName = (participants: string[]): string => {
+    const otherId = getOtherParticipantId(participants);
+    if (!otherId) return "Unknown";
+    return displayNames[otherId] || "Loading...";
   };
 
   const handleChatPress = (chatId: string) => {
@@ -77,7 +129,9 @@ export default function ChatsList() {
   };
 
   const renderChat = ({ item }: { item: Chat }) => {
-    const otherParticipant = getOtherParticipant(item.participants);
+    const otherParticipantDisplayName = getOtherParticipantDisplayName(
+      item.participants
+    );
     return (
       <TouchableOpacity
         style={styles.chatItem}
@@ -89,7 +143,7 @@ export default function ChatsList() {
         </View>
         <View style={styles.chatContent}>
           <Text style={styles.chatTitle}>
-            Chat with {otherParticipant.substring(0, 8)}...
+            Chat with {otherParticipantDisplayName}
           </Text>
           <Text style={styles.chatSubtitle}>
             {item.participants.length} participant
