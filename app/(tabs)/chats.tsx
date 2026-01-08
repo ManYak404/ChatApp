@@ -125,7 +125,7 @@ export default function ChatsList() {
 
   const handleChatPress = (chatId: string) => {
     // Navigate to the chat detail screen
-    router.push(`/index?chatId=${encodeURIComponent(chatId)}` as any);
+    router.push(`/chat?chatId=${encodeURIComponent(chatId)}` as any);
   };
 
   const renderChat = ({ item }: { item: Chat }) => {

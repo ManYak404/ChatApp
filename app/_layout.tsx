@@ -22,13 +22,22 @@ export default function RootLayout() {
   useEffect(() => {
     if (loading) return;
 
-    const inAuthGroup = segments[0] === "(tabs)";
+    const currentRoute = segments[0];
+    const inAuthGroup = currentRoute === "(tabs)";
+    const isLogin = currentRoute === "login";
+    // Index route: when segments is empty, we're at the root/index
+    const isIndex = !currentRoute;
+
+    // Let index page handle initial routing, don't interfere
+    if (isIndex) {
+      return;
+    }
 
     if (!user && inAuthGroup) {
       // User is not signed in and trying to access protected route
       router.replace("/login");
-    } else if (user && !inAuthGroup) {
-      // User is signed in and trying to access login page
+    } else if (user && isLogin) {
+      // User is signed in and trying to access login page, redirect to chats
       router.replace("/(tabs)/chats");
     }
   }, [user, segments, loading]);
@@ -43,7 +52,9 @@ export default function RootLayout() {
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
+      <Stack.Screen name="index" />
       <Stack.Screen name="login" />
+      <Stack.Screen name="chat" />
       <Stack.Screen name="(tabs)" />
     </Stack>
   );

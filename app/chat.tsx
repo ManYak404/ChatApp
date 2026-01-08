@@ -1,30 +1,30 @@
 import { auth, db } from "@/config/firebase";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import {
-  addDoc,
-  collection,
-  doc,
-  DocumentData,
-  getDoc,
-  onSnapshot,
-  orderBy,
-  query,
-  QueryDocumentSnapshot,
-  serverTimestamp,
-  Timestamp,
+    addDoc,
+    collection,
+    doc,
+    DocumentData,
+    getDoc,
+    onSnapshot,
+    orderBy,
+    query,
+    QueryDocumentSnapshot,
+    serverTimestamp,
+    Timestamp,
 } from "firebase/firestore";
 import { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    FlatList,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -48,8 +48,9 @@ export default function Chat() {
 
   const currentUserId = auth.currentUser?.uid || "";
   const [otherUserId, setOtherUserId] = useState<string>("");
+  const [otherParticipantDisplayName, setOtherParticipantDisplayName] = useState<string>("Loading...");
 
-  // Fetch chat document to get participants and extract otherUserId
+  // Fetch chat document to get participants and extract otherUserId, then fetch display name
   useEffect(() => {
     if (!chatId || !currentUserId) {
       setLoading(false);
@@ -67,6 +68,25 @@ export default function Chat() {
           // Find the other participant (not the current user)
           const other = participants.find((id: string) => id !== currentUserId);
           setOtherUserId(other || "");
+
+          // Fetch the other participant's display name
+          if (other) {
+            try {
+              const userDocRef = doc(db, "users", other);
+              const userDoc = await getDoc(userDocRef);
+              if (userDoc.exists()) {
+                const userData = userDoc.data();
+                setOtherParticipantDisplayName(userData.displayName || "Unknown");
+              } else {
+                setOtherParticipantDisplayName("Unknown");
+              }
+            } catch (error) {
+              console.error("Error fetching other participant's display name:", error);
+              setOtherParticipantDisplayName("Unknown");
+            }
+          } else {
+            setOtherParticipantDisplayName("Unknown");
+          }
         }
       } catch (error) {
         console.error("Error fetching chat data:", error);
@@ -193,6 +213,19 @@ export default function Chat() {
 
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
+      {/* Header with back button and display name */}
+      <View style={styles.header}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => router.replace("/(tabs)/chats")}
+          activeOpacity={0.7}
+        >
+          <Ionicons name="arrow-back" size={24} color="#007AFF" />
+        </TouchableOpacity>
+        <Text style={styles.headerTitle}>{otherParticipantDisplayName}</Text>
+        <View style={styles.backButtonPlaceholder} />
+      </View>
+
       <KeyboardAvoidingView
         style={styles.keyboardView}
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -268,6 +301,32 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
+  },
+  header: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: "#e0e0e0",
+    backgroundColor: "#fff",
+  },
+  backButton: {
+    width: 40,
+    height: 40,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  backButtonPlaceholder: {
+    width: 40,
+  },
+  headerTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: "#000",
+    flex: 1,
+    textAlign: "center",
   },
   keyboardView: {
     flex: 1,

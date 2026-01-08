@@ -67,7 +67,7 @@ export default function CreateChat() {
 
       if (existingChat) {
         // Navigate to existing chat
-        router.replace(`/index?chatId=${encodeURIComponent(existingChat.id)}` as any);
+        router.replace(`/chat?chatId=${encodeURIComponent(existingChat.id)}` as any);
         setCreating(false);
         return;
       }
@@ -78,7 +78,7 @@ export default function CreateChat() {
       });
 
       // Navigate to the new chat
-      router.replace(`/index?chatId=${encodeURIComponent(chatDocRef.id)}` as any);
+      router.replace(`/chat?chatId=${encodeURIComponent(chatDocRef.id)}` as any);
     } catch (error) {
       console.error("Error creating chat:", error);
       Alert.alert("Error", "Failed to create chat. Please try again.");
